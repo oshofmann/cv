@@ -1,6 +1,7 @@
 \documentclass{article}
 
 \usepackage{xspace}
+\usepackage[margin=1in]{geometry}
 
 \newcommand{\osck}{OSck\xspace}
 \newcommand{\inktag}{InkTag\xspace}
@@ -11,80 +12,80 @@ The operating system is the primary mediator between computer hardware and
 other layers of the system software stack, and operating systems research
 has often focused on supporting and integrating new and emerging trends in
 computer architecture. With my own interest in both operating systems as
-well as low-level implementation, my research has continued this tradition.
-However, key to my research has been using emerging architectural trends
-not only as a new target to be supported, but also as a starting point for
-high-level thought about core OS principles, such as the trust relationship
+well as the underlying architecture, my research has continued this
+tradition.  However, key to my research has been using emerging
+architectural trends not only as a new target to be supported, but also as
+a starting point for high-level thought about core OS principles, such as
+synchronization, or the trust relationship
 between applications and the operating system. In addition, I have
 concentrated on projects with serious implementations on production OS
-kernels.
-
-In the past, my work has focused on hardware transactional memory (HTM),
-which aims to simplify concurrent programming by 
+kernels, simulating the entire system when necessary, and running on real
+hardware when available. The process of integrating research ideas into
+complex systems provides its own valuable insights, and realistic
+implementations enable significantly more meaningful evaluations.
 
 My work with hardware transactional memory (HTM) and TxLinux~\cite{txlinux}
 used the complexity of the kernel as a proving ground for solving difficult
 transactional memory problems, such as invoking I/O operations within a
 transaction. The ability to run the same workload across different version
-of the kernel also provides a unique opportunity to evaluate the core
+of the Linux kernel also provides a unique opportunity to evaluate the core
 claims of transactional memory: the ability to write simpler code with
 increased synchronization performance.
 
 While HTM has yet to see widespread adoption, architectural support for
 virtualization is now a key selling point for modern processors.
+Virtualization provides a level of indirection between the operating
+system and hardware, and as is often the case, a level
+of indirection is a powerful tool. I have used virtualization to enable two
+systems, \osck and \inktag, that reexamine the trust relationship between
+operating system, application, and hypervisor. Essential for these systems
+is the judicious use of information from a potentially malicious OS kernel.
 
 {\bigskip \noindent\bf Past: Hardware transactional memory and the Linux
 kernel}
 
-\noindent Concurrent programming is difficult, but necessary. Hardware
-Transactional Memory~\cite{herlihy} (HTM) proposes to simplify concurrent
-programming
-
-My research focuses on hardware and software assistance for writing
-concurrent programs. Recent hardware trends have had manufacturers scaling
-the number of processing cores on a single chip, rather than the speed of a
-single core.  This trend has shifted the burden of application performance
+\noindent
+The trend towards scaling the number of cores on a chip rather than scaling
+single core performance has shifted the burden of application performance
 from the hardware designer to the programmer, who must now write parallel
-code to take advantage of multiple cores. However, there has been
-relatively little development in programming parallel architectures. In
-particular, mutual exclusion through locking remains the primary form of
-synchro- nization for parallel programs. Locking introduces a number of
+code.
+However, mutual exclusion through locking remains the primary form of
+synchronization for parallel programs. Locking introduces a number of
 well-known correctness and performance issues in parallel code.
 High-performance parallel code requires fine-grained locking, and advanced
 reasoning about locking discipline to avoid deadlock.
 
-The next generation of parallel hardware will require simpler methods for
-writing high-performance parallel programs.  Hardware transactional memory
-(HTM) is a proposal that has attracted attention as a powerful
-synchronization primitive that is easier to reason about than locks and can
-be implemented with moderate hardware support. Transactional memory (TM) is
-a form of optimistic concurrency. To synchronize a program, the programmer
-need only delimit the critical regions of code that access shared data.
-These regions would otherwise be guarded by locks or by another form of
-synchronization.  Critical regions of different threads speculatively
-execute in parallel. TM enforces a serializable interleaving of critical
-regions by buffering writes and detecting conflicting data accesses.
-Conflicting critical regions roll back and are re- executed. Because
-critical regions will execute in parallel if it is safe, the programmer
-does not need to manually add fine-grained synchronization to get good
-performance. Hardware transactional memory is implemented by adding a small
-amount of state to processor caches and cache coherence mechanisms, which
-already manage data sharing between processors.
+Hardware transactional memory (HTM) is a proposal that has attracted
+attention as a powerful synchronization primitive that is easier to reason
+about than locks and can be implemented with moderate hardware support.
+%Transactional memory (TM) is a form of optimistic concurrency.
+To synchronize a program, the programmer need only delimit the critical
+regions of code that access shared data.  These regions would otherwise be
+guarded by locks or by another form of synchronization. Critical regions of
+different threads speculatively execute in parallel, and HTM enforces a
+serializable interleaving of critical regions by buffering writes and
+detecting conflicting data accesses.  Because critical regions will execute
+in parallel if it is safe, the programmer does not need to manually add
+fine-grained synchronization to get good performance.
+%Hardware transactional memory is implemented by adding a small
+%amount of state to processor caches and cache coherence mechanisms, which
+%already manage data sharing between processors.
 
-As with any new architectural feature, HTM has a high barrier to adoption
-in production processors. Processor manufacturers are understandably
-reluctant to spend both development effort and die space on features that
-may not enjoy widespread use. Recent directions in HTM research have
-exacerbated this problem, proposing solutions that manipulate bitfields
-several kilobits in size with every memory operation, or that require
-modifications to the entire memory hierarchy.
-
-My research focuses on the benefit provided by a simple HTM design that
-does not support transactions that overflow hardware resources or perform
-complicated operations such as I/O. These exceptional situations are the
-subject of signif- icant HTM research. However, these problems can be
-addressed via minimal modifications to the standard transactional ISA,
-without requiring baroque hardware design.
+As with any new architectural feature, HTM has had a high barrier to
+adoption in production processors.
+%Processor manufacturers are understandably
+%reluctant to spend both development effort and die space on features that
+%may not enjoy widespread use. Recent directions in HTM research have
+%exacerbated this problem, proposing solutions that manipulate bitfields
+%several kilobits in size with every memory operation, or that require
+%modifications to the entire memory hierarchy.
+My research in HTM focused on the benefit provided by a simple HTM design
+that does not support transactions that overflow hardware resources or
+perform complicated operations such as I/O. These exceptional situations
+are the subject of significant HTM research, often generating complex
+solutions.
+However, these problems can be addressed via minimal modifications to the
+standard transactional ISA, without requiring baroque hardware design.
 
 TxLinux 2.6 (SOSP ’07) is a transactional version of the Linux 2.6 kernel
 that introduces Cooperative Transactional Spinlocks (cxspinlocks).
@@ -102,7 +103,7 @@ significant performance benefit for a large, complex codebase. Linux 2.4
 uses a coarse-grained locking structure that is much simpler than the
 highly engineered synchronization of Linux 2.6, and as a result exhibits
 significantly less scalability. TxLinux 2.4 uses transactions to improve
-performance over Linux 2.4 by as much as 40%. Even a simple HTM design can
+performance over Linux 2.4 by as much as 40\%. Even a simple HTM design can
 significantly soften the tradeoff between synchronization performance and
 complexity. In addition, the work extends the cxspinlock technique to
 blocking primitives such as mutexes, and introduces a new technique for
@@ -111,15 +112,15 @@ requiring expensive transaction restarts. Both of these developments use
 software to increase the utility of hardware transactions without requiring
 a new hardware design.
 
-Cxspinlocks provide a compelling programming model for the Linux kernel,
-greatly improving the performance of simple, coarse-grained
-synchronization. To provide the complete benefits of transactions (atomic
-critical sections without explicit locking) to application developers, the
-work in ASPLOS ’09 proposes transaction ordering, a novel technique for
-combining hardware and software synchronization. Transaction ordering
-allows a wide variety of HTM designs to syn- chronize access to the same
-data as a wide variety of software synchronization, such as locking or
-software transactional 1 memory (STM). Software can then handle exceptional
+%Cxspinlocks provide a compelling programming model for the Linux kernel,
+%greatly improving the performance of simple, coarse-grained
+%synchronization. To provide the complete benefits of transactions (atomic
+%critical sections without explicit locking) to application developers
+The work in ASPLOS ’09 proposes \emph{transaction ordering}, a novel
+technique for combining hardware and software synchronization. Transaction
+ordering allows a wide variety of HTM designs to synchronize access to the
+same data as a wide variety of software synchronization, such as locking or
+software transactional memory (STM). Software can then handle exceptional
 transactions that cannot be executed correctly in hardware, such as those
 that overflow hardware resources. Existing research has proposed hybrid
 hardware-software designs, but all require a close pairing of hardware and
@@ -169,7 +170,7 @@ calls exported by the operating system.
 
 From the perspective of the application, however, hypervisors only increase
 the size of the trusted computing base. Applications still rely on and are
-entirely controlled by the same operating system as before. This thesis
+entirely controlled by the same operating system as before. My research
 investigates ways in which a trusted hypervisor can improve this situation.
 \textbf{\osck }is a system which attempts to increase application trust in
 the OS, by detecting \emph{kernel rootkits}, malicious pieces of software
@@ -182,8 +183,9 @@ mapping the correct files into the right part of the application's address
 space).
 
 Hypervisor support for rootkit detection, and hypervisor support for
-untrusted operating systems have been proposed in previous work. The key
-insight introduced with this thesis is the significant power afforded to
+untrusted operating systems have been proposed in previous work.
+The key
+insight introduced by my research is the significant power afforded to
 such systems by leveraging information from the potentially malicious
 operating system. For example, most kernel rootkits modify OS functionality
 by replacing function pointers in kernel objects. Validating that the
@@ -223,6 +225,11 @@ behavior by the operating system.
 
 {\bigskip \noindent \bf Ongoing research}
 
-\noindent Attributitis
+\noindent
+In my research, recent and emerging hardware trends have served to ground
+technical implementations, as when providing full-featured synchronization
+primitives with modest hardware in TxLinux, or implementing an untrusted
+operating system while still taking advantage of modern virtualization
+hardware in \inktag. However, 
 
 \end{document}
