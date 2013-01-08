@@ -22,9 +22,9 @@ concentrated on projects with serious implementations on production OS
 kernels, simulating the entire system when necessary, and running on real
 hardware when available. The process of integrating research ideas into
 complex systems provides its own valuable insights, and realistic
-implementations enable significantly more meaningful evaluations.
+implementations enable more meaningful evaluations.
 
-My work with hardware transactional memory (HTM) and TxLinux~\cite{txlinux}
+My work with hardware transactional memory (HTM) and TxLinux
 used the complexity of the kernel as a proving ground for solving difficult
 transactional memory problems, such as invoking I/O operations within a
 transaction. The ability to run the same workload across different version
@@ -172,15 +172,15 @@ From the perspective of the application, however, hypervisors only increase
 the size of the trusted computing base. Applications still rely on and are
 entirely controlled by the same operating system as before. My research
 investigates ways in which a trusted hypervisor can improve this situation.
-\textbf{\osck }is a system which attempts to increase application trust in
-the OS, by detecting \emph{kernel rootkits}, malicious pieces of software
-that can be impossible to detect from an application, or even the kernel,
-because they modify kernel functionality. \textbf{\inktag }removes the
-necessity for an application to trust the OS at all, by isolating an
-application from an untrusted operating system, and giving it the tools to
-validate that the operating system is behaving faithfully (for example by
-mapping the correct files into the right part of the application's address
-space).
+\osck (ASPLOS 11) is a system which attempts to increase application trust
+in the OS, by detecting \emph{kernel rootkits}, malicious pieces of
+software that can be impossible to detect from an application, or even the
+kernel, because they modify kernel functionality. \inktag (ASPLOS 13)
+removes the necessity for an application to trust the OS at all, by
+isolating an application from an untrusted operating system, and giving it
+the tools to validate that the operating system is behaving faithfully (for
+example by mapping the correct files into the right part of the
+application's address space).
 
 Hypervisor support for rootkit detection, and hypervisor support for
 untrusted operating systems have been proposed in previous work.
@@ -226,10 +226,55 @@ behavior by the operating system.
 {\bigskip \noindent \bf Ongoing research}
 
 \noindent
-In my research, recent and emerging hardware trends have served to ground
-technical implementations, as when providing full-featured synchronization
-primitives with modest hardware in TxLinux, or implementing an untrusted
-operating system while still taking advantage of modern virtualization
-hardware in \inktag. However, 
+In my research, recent and emerging architectural trends have served to
+ground technical implementations, as when providing full-featured
+transactional synchronization primitives with modest hardware in TxLinux,
+or implementing an untrusted operating system while still taking advantage
+of modern virtualization hardware in \inktag. However, considering OS
+design issues within a constrained environment also serves as a starting
+point for higher-level thought about core OS issues. For example, in
+addition to the goal of creating a system that runs efficiently on modern
+virtualization hardware, a primary goal for the \inktag project has been to
+support the essential OS services required to run realistic applications.
+My work in ASPLOS 09 proposes \emph{attribute-based access control}, which
+uses a hierarchical naming scheme to support access control that is
+decentralized (users can create new principals without requiring an
+administrator), flexible, may be efficiently checked within the hypervisor,
+and does not require a central repository of principals. While these
+qualities are desirable for maintaining a simple, efficient hypervisor,
+they are useful in other domains as well. We are currently investigating
+applying this scheme to the local filesystem in a traditional OS context,
+or to distributed services such as HDFS. These domains also benefit from
+flexible, decentralized access control, and eliminating the requirement for
+a central repository of access control information is a clear advantage in
+a distributed setting.
+
+As a substantial implementation of an untrusted operating system, \inktag
+also serves as a testbed for further exploring issues of trust in operating
+system services. Our initial \inktag implementation supports the necessary
+OS functionality to run a wiki server on an untrusted operating system,
+with privacy and integrity for application and user data, and access
+control enforced at the hypervisor level. \inktag also presents an
+attractive model for desktop users, who often wish to browse
+potentially untrustworthy internet sites and use high-security applications
+(such as online banking) on the same machine. However, desktop computing
+requires a trusted I/O path from the user to the application and back.
+Supporting services such as user I/O efficiently and securely with an
+untrusted operating system is a key research goal for continued work on
+\inktag.
+
+I am also interested in taking research ideas and making them practicable.
+\inktag represents a substantial deviation from the traditional operating
+system trust hierarchy, and it is unlikely that users will run entirely
+untrusted operating systems. However, the techniques developed for \inktag
+can be useful in more restricted settings, for example protecting the input of
+security-critical data such as passwords. Existing systems propose
+alternate paths for critical data, but often suffer from high latency
+switches (seconds) between operating system and secure contexts. Although
+\inktag increases context switch latency, it remains on the order of
+microseconds. Similarly, Intel's upcoming Haswell microarchitecture
+represents the first widely-available implementation of hardware
+transactional memory, and provides an opportunity to reevaluate claims and
+proposals made based on simulated HTM performance.
 
 \end{document}
