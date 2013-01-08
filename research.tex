@@ -8,6 +8,10 @@
 \newcommand{\codeid}[1]{{\fontsize{9pt}{12pt}\tt #1}}
 
 \begin{document}
+{\noindent \bf Statement on research \hfill Owen Hofmann}
+
+\bigskip
+
 The operating system is the primary mediator between computer hardware and
 other layers of the system software stack, and operating systems research
 has often focused on supporting and integrating new and emerging trends in
@@ -60,8 +64,8 @@ attention as a powerful synchronization primitive that is easier to reason
 about than locks and can be implemented with moderate hardware support.
 %Transactional memory (TM) is a form of optimistic concurrency.
 To synchronize a program, the programmer need only delimit the critical
-regions of code that access shared data.  These regions would otherwise be
-guarded by locks or by another form of synchronization. Critical regions of
+regions of code that access shared data.
+Critical regions of
 different threads speculatively execute in parallel, and HTM enforces a
 serializable interleaving of critical regions by buffering writes and
 detecting conflicting data accesses.  Because critical regions will execute
@@ -104,7 +108,7 @@ uses a coarse-grained locking structure that is much simpler than the
 highly engineered synchronization of Linux 2.6, and as a result exhibits
 significantly less scalability. TxLinux 2.4 uses transactions to improve
 performance over Linux 2.4 by as much as 40\%. Even a simple HTM design can
-significantly soften the tradeoff between synchronization performance and
+soften the tradeoff between synchronization performance and
 complexity. In addition, the work extends the cxspinlock technique to
 blocking primitives such as mutexes, and introduces a new technique for
 transitioning between transactional and locking critical regions without
@@ -116,7 +120,7 @@ a new hardware design.
 %greatly improving the performance of simple, coarse-grained
 %synchronization. To provide the complete benefits of transactions (atomic
 %critical sections without explicit locking) to application developers
-The work in ASPLOS ’09 proposes \emph{transaction ordering}, a novel
+My work in ASPLOS 09 proposes \emph{transaction ordering}, a novel
 technique for combining hardware and software synchronization. Transaction
 ordering allows a wide variety of HTM designs to synchronize access to the
 same data as a wide variety of software synchronization, such as locking or
@@ -236,16 +240,17 @@ point for higher-level thought about core OS issues. For example, in
 addition to the goal of creating a system that runs efficiently on modern
 virtualization hardware, a primary goal for the \inktag project has been to
 support the essential OS services required to run realistic applications.
-My work in ASPLOS 09 proposes \emph{attribute-based access control}, which
+My work in ASPLOS 13 proposes \emph{attribute-based access control}, which
 uses a hierarchical naming scheme to support access control that is
-decentralized (users can create new principals without requiring an
+egalitarian (users can create new principals without requiring an
 administrator), flexible, may be efficiently checked within the hypervisor,
-and does not require a central repository of principals. While these
+and decentralized (it does not require a central repository of principals).
+While these
 qualities are desirable for maintaining a simple, efficient hypervisor,
 they are useful in other domains as well. We are currently investigating
 applying this scheme to the local filesystem in a traditional OS context,
 or to distributed services such as HDFS. These domains also benefit from
-flexible, decentralized access control, and eliminating the requirement for
+flexible user-defined access control, and eliminating the requirement for
 a central repository of access control information is a clear advantage in
 a distributed setting.
 
@@ -270,11 +275,20 @@ untrusted operating systems. However, the techniques developed for \inktag
 can be useful in more restricted settings, for example protecting the input of
 security-critical data such as passwords. Existing systems propose
 alternate paths for critical data, but often suffer from high latency
-switches (seconds) between operating system and secure contexts. Although
-\inktag increases context switch latency, it remains on the order of
-microseconds. Similarly, Intel's upcoming Haswell microarchitecture
-represents the first widely-available implementation of hardware
-transactional memory, and provides an opportunity to reevaluate claims and
-proposals made based on simulated HTM performance.
+switches (on the order of seconds) between operating system and secure
+contexts. Although
+\inktag does increase context switch latency, it remains on the order of
+microseconds. 
+
+{\bigskip \noindent \bf Summary}
+
+\noindent Operating systems play a broad role, from managing low-level
+hardware interactions to fundamentally defining how applications execute
+and interact with one another and the outside world. In my research I try
+to address both sides of this role, because the merit of a solution is
+often judged by the interaction of these issues, which are frequently in
+opposition. With TxLinux, the goal of simplifying parallel programming,
+both within the kernel and at user level, must be balanced against the need
+for restraint in microarchitectural implementation. \inktag 
 
 \end{document}
