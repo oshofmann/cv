@@ -1,10 +1,12 @@
-all: cv.pdf research.pdf
+DOCS = cv-tech research
+PDF = $(addsuffix .pdf,$(DOCS))
 
-cv.pdf: cv.tex
-	rubber -d cv
+all: $(PDF)
 
-research.pdf: research.tex
-	rubber -d research
+cv-tech.pdf: cv-*.tex
+
+%.pdf: %.tex
+	rubber -d $*
 
 clean:
-	rubber -d --clean cv research
+	rubber -d --clean $(DOCS)

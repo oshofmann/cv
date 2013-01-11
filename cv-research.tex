@@ -1,0 +1,301 @@
+\documentclass{article}
+
+\usepackage{xspace}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\osck}{OSck\xspace}
+\newcommand{\inktag}{InkTag\xspace}
+\newcommand{\codeid}[1]{{\fontsize{9pt}{12pt}\tt #1}}
+
+\begin{document}
+{\noindent \bf Statement on research \hfill Owen Hofmann}
+
+\bigskip
+
+The operating system is the primary mediator between computer hardware and
+other layers of the system software stack, and operating systems research
+has often focused on supporting and integrating new and emerging trends in
+computer architecture. With my own interest in both operating systems as
+well as the underlying architecture, my research has continued this
+tradition.  However, key to my research has been using emerging
+architectural trends not only as a new target to be supported, but also as
+a starting point for high-level thought about core OS principles, such as
+synchronization, or the trust relationship
+between applications and the operating system. In addition, I have
+concentrated on projects with serious implementations on production OS
+kernels, simulating the entire system when necessary, and running on real
+hardware when available. The process of integrating research ideas into
+complex systems provides its own valuable insights, and realistic
+implementations enable more meaningful evaluations.
+
+My work with hardware transactional memory (HTM) and TxLinux
+used the complexity of the kernel as a proving ground for solving difficult
+transactional memory problems, such as invoking I/O operations within a
+transaction. The ability to run the same workload across different version
+of the Linux kernel also provides a unique opportunity to evaluate the core
+claims of transactional memory: the ability to write simpler code with
+increased synchronization performance.
+
+While HTM has yet to see widespread adoption, architectural support for
+virtualization is now a key selling point for modern processors.
+Virtualization provides a level of indirection between the operating
+system and hardware, and as is often the case, a level
+of indirection is a powerful tool. I have used virtualization to enable two
+systems, \osck and \inktag, that reexamine the trust relationship between
+operating system, application, and hypervisor. Essential for these systems
+is the judicious use of information from a potentially malicious OS kernel.
+
+{\bigskip \noindent\bf Past: Hardware transactional memory and the Linux
+kernel}
+
+\noindent
+The trend towards scaling the number of cores on a chip rather than scaling
+single core performance has shifted the burden of application performance
+from the hardware designer to the programmer, who must now write parallel
+code.
+However, mutual exclusion through locking remains the primary form of
+synchronization for parallel programs. Locking introduces a number of
+well-known correctness and performance issues in parallel code.
+High-performance parallel code requires fine-grained locking, and advanced
+reasoning about locking discipline to avoid deadlock.
+
+Hardware transactional memory (HTM) is a proposal that has attracted
+attention as a powerful synchronization primitive that is easier to reason
+about than locks and can be implemented with moderate hardware support.
+%Transactional memory (TM) is a form of optimistic concurrency.
+To synchronize a program, the programmer need only delimit the critical
+regions of code that access shared data.
+Critical regions of
+different threads speculatively execute in parallel, and HTM enforces a
+serializable interleaving of critical regions by buffering writes and
+detecting conflicting data accesses.  Because critical regions will execute
+in parallel if it is safe, the programmer does not need to manually add
+fine-grained synchronization to get good performance.
+%Hardware transactional memory is implemented by adding a small
+%amount of state to processor caches and cache coherence mechanisms, which
+%already manage data sharing between processors.
+
+As with any new architectural feature, HTM has had a high barrier to
+adoption in production processors.
+%Processor manufacturers are understandably
+%reluctant to spend both development effort and die space on features that
+%may not enjoy widespread use. Recent directions in HTM research have
+%exacerbated this problem, proposing solutions that manipulate bitfields
+%several kilobits in size with every memory operation, or that require
+%modifications to the entire memory hierarchy.
+My research in HTM focused on the benefit provided by a simple HTM design
+that does not support transactions that overflow hardware resources or
+perform complicated operations such as I/O. These exceptional situations
+are the subject of significant HTM research, often generating complex
+solutions.
+However, these problems can be addressed via minimal modifications to the
+standard transactional ISA, without requiring baroque hardware design.
+
+TxLinux 2.6 (SOSP ’07) is a transactional version of the Linux 2.6 kernel
+that introduces Cooperative Transactional Spinlocks (cxspinlocks).
+Cxspinlocks are a synchronization primitive that can use either locking or
+transactions to protect a single critical region, and provides fairness
+between both. A transaction that overflows hardware resources or performs
+I/O restarts and falls back on locking, and threads attempting to use
+either locks or transactions for synchronization contend fairly for a
+single critical region. Implementing the ISA support for both correct and
+fair cooperation between transactions and locks does not require changing
+the hardware structures that support HTM.
+
+TxLinux 2.4 (ASPLOS ’09) shows that a simple HTM design can have
+significant performance benefit for a large, complex codebase. Linux 2.4
+uses a coarse-grained locking structure that is much simpler than the
+highly engineered synchronization of Linux 2.6, and as a result exhibits
+significantly less scalability. TxLinux 2.4 uses transactions to improve
+performance over Linux 2.4 by as much as 40\%. Even a simple HTM design can
+soften the tradeoff between synchronization performance and
+complexity. In addition, the work extends the cxspinlock technique to
+blocking primitives such as mutexes, and introduces a new technique for
+transitioning between transactional and locking critical regions without
+requiring expensive transaction restarts. Both of these developments use
+software to increase the utility of hardware transactions without requiring
+a new hardware design.
+
+%Cxspinlocks provide a compelling programming model for the Linux kernel,
+%greatly improving the performance of simple, coarse-grained
+%synchronization. To provide the complete benefits of transactions (atomic
+%critical sections without explicit locking) to application developers
+My work in ASPLOS 09 proposes \emph{transaction ordering}, a novel
+technique for combining hardware and software synchronization. Transaction
+ordering allows a wide variety of HTM designs to synchronize access to the
+same data as a wide variety of software synchronization, such as locking or
+software transactional memory (STM). Software can then handle exceptional
+transactions that cannot be executed correctly in hardware, such as those
+that overflow hardware resources. Existing research has proposed hybrid
+hardware-software designs, but all require a close pairing of hardware and
+software systems.
+
+
+{\bigskip \noindent \bf Current: Rethinking operating system trust}
+
+\noindent The operating system has long been the default root of trust for
+all applications running on a system. However, this trust relationship is
+less than ideal. The operating system is shared between all applications,
+significantly expanding the threat of individual application
+vulnerabilities. If an application is compromised, and can compromise the
+OS, or elevate its privilege, what had been a vulnerability in a single
+application becomes a vulnerability for all applications, because the OS
+can completely control application behavior.
+
+%Although securing operating systems is critical, operating systems are
+%difficult pieces of software to secure.  Modern operating systems consist
+%of millions of lines of code, written by numerous parties. A security bug
+%in a single line of code often compromises the system in its entirety.
+%Furthermore, the operating system's attack surface as seen from an
+%application is the system call interface. Over time, the system call
+%interface has grown from a handful of simple calls for operating on files
+%(such as \codeid{open}, \codeid{read}, and \codeid{write}), to a vast
+%library of functionality for operating on infrequently used OS services.
+%Drivers often have the ability to arbitrarily extend this interface even
+%further, through calls such as \codeid{ioctl}.
+
+As OS security has become more perilous, hypervisors have reemerged as a
+powerful and useful layer in the system software stack. The utility of
+software-based virtualization for x86 processors has led to increases in
+performance via paravirtualization, and finally to full hardware
+virtualization support in current processor generations. In a virtualized
+system, the hypervisor becomes the new software root of trust, and
+hypervisors are significantly better candidates for this role than
+operating systems. Hypervisors contain fewer lines of code than a typical
+operating system. Also, the hypervisor interface is a hardware interface,
+which is far simpler and easier to make secure than the hundreds of system
+calls exported by the operating system.
+
+%From 2010 to 2012, a
+%search of the National Vulnerability Database returns 3 exploits for Xen and
+%13 exploits for KVM that have an impact worse than denial of service. By
+%contrast, there were 26 such vulnerabilities published for the Linux kernel
+%in May and June of 2012 alone, of which only 4 were for device drivers.
+
+From the perspective of the application, however, hypervisors only increase
+the size of the trusted computing base. Applications still rely on and are
+entirely controlled by the same operating system as before. My research
+investigates ways in which a trusted hypervisor can improve this situation.
+\osck (ASPLOS 11) is a system which attempts to increase application trust
+in the OS, by detecting \emph{kernel rootkits}, malicious pieces of
+software that can be impossible to detect from an application, or even the
+kernel, because they modify kernel functionality. \inktag (ASPLOS 13)
+removes the necessity for an application to trust the OS at all, by
+isolating an application from an untrusted operating system, and giving it
+the tools to validate that the operating system is behaving faithfully (for
+example by mapping the correct files into the right part of the
+application's address space).
+
+Hypervisor support for rootkit detection, and hypervisor support for
+untrusted operating systems have been proposed in previous work.
+The key
+insight introduced by my research is the significant power afforded to
+such systems by leveraging information from the potentially malicious
+operating system. For example, most kernel rootkits modify OS functionality
+by replacing function pointers in kernel objects. Validating that the
+kernel will invoke the right function involves tracing all possible paths
+through tens to hundreds of thousands of kernel data structures to check
+that any paths that end at a function pointer will not invoke malicious
+functionality. \osck uses internal kernel information to map memory
+locations to data types, allowing it to check nodes in the graph of data
+structures in isolation, and in any order (such as by their order in
+memory), without maintaining the state necessary for a depth- or
+breadth-first traversal.  Importantly, \osck does not trust the information
+that it extracts from the kernel --- it will detect malfeasance for both a
+malicious function pointer as well as for corruption of the type
+information from the potentially malicious kernel.
+
+\inktag extends this concept with the introduction of
+\emph{paraverification}. Like paravirtualization, paraverification has an
+untrusted operating system provide information essential for the \inktag
+hypervisor to verify that the kernel is operating correctly in its
+interactions with a trusted application. To do so, the hypervisor must
+match OS modifications of application state (such as modifying page tables) to
+application intent (such as a prior call to \codeid{mmap}). Previously, this
+required the application and hypervisor to synchronize on a copy of the
+application's memory map, and index and look up entries in response to
+latency-critical events, such as page faults. However, the OS already
+contains a copy of the memory map, in which it must also look up entries in
+response to faults. With paraverification, the application need only record
+entries in the memory map in an unordered array. The operating system is
+then responsible for fast indexing and lookup during page faults, and
+passing that information to the application and the hypervisor so that they
+may validate updates. Again, key to this new set of responsibilities for
+the untrusted OS is that although the application and hypervisor use
+OS-provided information for efficiency and implementation simplicity, they
+do not use it for correctness. \inktag can detect incorrect
+paraverification information as well as it can detect other malicious
+behavior by the operating system.
+
+{\bigskip \noindent \bf Ongoing research}
+
+\noindent
+In my research, recent and emerging architectural trends have served to
+ground technical implementations, as when providing full-featured
+transactional synchronization primitives with modest hardware in TxLinux,
+or implementing an untrusted operating system while still taking advantage
+of modern virtualization hardware in \inktag. However, considering OS
+design issues within a constrained environment also serves as a starting
+point for higher-level thought about core OS issues. For example, in
+addition to the goal of creating a system that runs efficiently on modern
+virtualization hardware, a primary goal for the \inktag project has been to
+support the essential OS services required to run realistic applications.
+My work in ASPLOS 13 proposes \emph{attribute-based access control}, which
+uses a hierarchical naming scheme to support access control that is
+egalitarian (users can create new principals without requiring an
+administrator), flexible, may be efficiently checked within the hypervisor,
+and decentralized (it does not require a central repository of principals).
+While these
+qualities are desirable for maintaining a simple, efficient hypervisor,
+they are useful in other domains as well. We are currently investigating
+applying this scheme to the local filesystem in a traditional OS context,
+or to distributed services such as HDFS. These domains also benefit from
+flexible user-defined access control, and eliminating the requirement for
+a central repository of access control information is a clear advantage in
+a distributed setting.
+
+As a substantial implementation of an untrusted operating system, \inktag
+also serves as a testbed for further exploring issues of trust in operating
+system services. Our initial \inktag implementation supports the necessary
+OS functionality to run a wiki server on an untrusted operating system,
+with privacy and integrity for application and user data, and access
+control enforced at the hypervisor level. \inktag also presents an
+attractive model for desktop users, who often wish to browse
+potentially untrustworthy internet sites and use high-security applications
+(such as online banking) on the same machine. However, desktop computing
+requires a trusted I/O path from the user to the application and back.
+Supporting services such as user I/O efficiently and securely with an
+untrusted operating system is a key research goal for continued work on
+\inktag.
+
+I am also interested in taking research ideas and making them practicable.
+\inktag represents a substantial deviation from the traditional operating
+system trust hierarchy, and it is unlikely that users will run entirely
+untrusted operating systems. However, the techniques developed for \inktag
+can be useful in more restricted settings, for example protecting the input of
+security-critical data such as passwords. Existing systems propose
+alternate paths for critical data, but often suffer from high latency
+switches (on the order of seconds) between operating system and secure
+contexts. Although
+\inktag does increase context switch latency, it remains on the order of
+microseconds. 
+
+{\bigskip \noindent \bf Summary}
+
+\noindent Operating systems play a broad role, from managing low-level
+hardware interactions to fundamentally defining how applications execute
+and interact with one another and the outside world. In my research I try
+to address both sides of this role, because the merit of a solution is
+often judged by the interaction of these issues, which are frequently in
+opposition. With TxLinux, the goal of simplifying parallel programming,
+both within the kernel and at user level, must be balanced against the need
+for restraint in microarchitectural implementation. \inktag subverts the
+traditional trust relationship between application and operating system,
+but must do so in a way that is as transparent as possible for both
+performance and application programming model, without simply rewriting an
+OS in the hypervisor. Satisfying each of these
+goals requires both low-level technical insight and a careful evaluation
+and reformulation of the core set of operating system services typically
+used by applications.
+
+\end{document}
