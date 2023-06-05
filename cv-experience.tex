@@ -1,10 +1,76 @@
 \section{Experience}
+\href{https://katanagraph.ai}{\textbf{Katana Graph}}
+\begin{outerlist}
+\item[] \textit{Software Engineer}%
+   \hfill \textbf{June to November 2021}
+   \begin{outerlist}
+      \item Initial design and implementation of indexing for Katana, a high
+      performance graph database.
+   \end{outerlist}
+\end{outerlist}
+
+\bigskip
+
+\href{https://cloud.google.com/compute}{\textbf{Google Compute Engine}}
+\begin{outerlist}
+\item[] \textit{Senior Software Engineer}%
+   \hfill \textbf{2017 to June 2021}
+\item[] \textit{Software Engineer}%
+   \hfill \textbf{September 2013 to 2017}
+   \begin{outerlist}
+      \item VM memory management and live migration
+      \begin{outerlist}
+         \item Ran early evaluations of TLB page size and NUMA scheduling
+         effects on large memory VM workloads. Project lead for design,
+         implementation and rollout of GCE VMs backed by hugetlbfs.
+         \item Core contributor to GCE's live migration technology. Helped take
+         post-copy memory migration from prototype to production. Authored
+         numerous performance and reliability improvements in response to
+         internal benchmarking and external customer pain. Rewrote GCE's VMM
+         memory migration control for simplicity and testability.
+      \end{outerlist}
+      \item VM timekeeping
+      \begin{outerlist}
+         \item Responsible for identifying and addressing all issues
+         related to timekeeping in GCE guests. Implemented consistency and
+         policy for timekeeping across VM live migration.
+         \item Led a project to provide Google's TrueTime service to GCE VMs.
+         Designed, implemented and deployed a paravirtual interface allowing
+         GCE guests to generate TrueTime intervals at native performance.
+      \end{outerlist}
+      \item Kernel/KVM development, qualification and rollout
+      \begin{outerlist}
+         \item Engineering lead for GCE production kernel qualification and
+         rollout. Worked with teams across GCE and Google to identify and
+         resolve long-tail bugs in the kernel (and occasionally CPU)
+         deployed to production GCE hosts. GCE lead for upgrade from
+         Linux upstream version 3.11 to 4.3.
+         \item Contributed various gruntwork to GCE's response to
+         Spectre/Meltdown, such as backporting mitigations.
+         \item Contributor to landing many new platforms in GCE, especially new
+         Intel microarchitectures. Lead for integrating new Cascadelake
+	 CPUs. Designed and implemented stack for passing through host
+	 non-volatile memory (Intel Apache Pass NVDIMMs) to GCE guests as a
+	 customer-selectable addon.
+      \end{outerlist}
+      \item Core VMM development
+      \begin{outerlist}
+         \item Contributor to several areas across the core of GCE's C++
+         hypervisor.
+         \item Lead contributor for project to revamp the GCE hypervisor
+         for new host platform topologies.
+      \end{outerlist}
+   \end{outerlist}
+\end{outerlist}
+
+\pagebreak
+
 \href{http://www.cs.utexas.edu}{\textbf{The University of Texas at Austin,
 Department of Computer Science}}
 \begin{outerlist}
 
 \item[] \textit{Research Assistant}%
-    \hfill \textbf{May 2007 to present}
+    \hfill \textbf{May 2007 to August 2013}
     \begin{innerlist}
         \item TxLinux 2.6 
         \begin{innerlist}
@@ -52,7 +118,7 @@ hypervisor-based kernel rootkit detection based on the Linux KVM hypervisor
          \begin{innerlist}
             \item Designed and implemented InkTag, a hypervisor-based system
 for securely executing applications under an untrusted operating system
-            \item To appear in ASPLOS '13
+            \item Published in ASPLOS '13, ASPLOS '16
          \end{innerlist}
     \end{innerlist}
 \item[] \textit{Assistant Instructor}%
@@ -79,13 +145,13 @@ performance with synchronization labs
         \end{innerlist}
 \end{outerlist}
 
-\bigskip
+\pagebreak
 
-\href{http://research.microsoft.com}{\textbf{Microsoft Research}}
+\href{https://research.microsoft.com}{\textbf{Microsoft Research}}
 \begin{outerlist}
 
 \item[] \textit{Intern}
-    \hfill \textbf{June 2010 to August 2010}
+    \hfill \textbf{June to August 2010}
     \begin{innerlist}
         \item Flat Datacenter Storage
         \begin{innerlist}
@@ -93,9 +159,9 @@ performance with synchronization labs
 Datacenter Storage (FDS)
            \item Built initial implementation of failure recovery within
 FDS
-           \item FDS currently holds records in both ``Indy'' and
+           \item FDS held records in both ``Indy'' and
 ``Daytona'' categories for the MinuteSort benchmark
-(\href{http://www.sortbenchmark.org}{www.sortbenchmark.org}).
+(\href{https://www.sortbenchmark.org}{www.sortbenchmark.org}).
            \item Published in OSDI '12
         \end{innerlist}
      \end{innerlist}
